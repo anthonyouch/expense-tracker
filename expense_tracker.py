@@ -5,8 +5,7 @@ Handles adding, viewing, and summarizing expenses.
 For detailed requirements and features, refer to requirements.md.
 """
 
-from datetime import datetime, date
-
+import datetime
 import calendar
 from decimal import Decimal
 
@@ -22,6 +21,8 @@ from expense import Expense
 def main():
 
     initialize_db()
+
+    process_recurring_expenses()
 
     while True:
         print("\nWelcome to the Expense Tracker!")
@@ -91,10 +92,10 @@ def add_expense():
         is_recurring = input("Is this a recurring expense? (y/n): ").strip().lower() == "y"
         recurring_schedule = None
         if is_recurring:
-            recurring_schedule = input("Enter recurring schedule (weekly, monthly):")
+            recurring_schedule = input("Enter recurring schedule (daily, weekly, monthly):")
         
         # Create an Expense object
-        expense_obj = Expense(name, category, str(amount), datetime.now().strftime("%Y-%m-%d"), 1 if is_recurring else 0, recurring_schedule)
+        expense_obj = Expense(name, category, str(amount), datetime.datetime.now().strftime("%Y-%m-%d"), 1 if is_recurring else 0, recurring_schedule)
 
         # Save the expense to the CSV file using our helper function
         write_expense(expense_obj.to_dict())
@@ -154,7 +155,7 @@ def show_remaining_budget():
             print("Budget cannot be negative.")
             return
 
-        today = date.today()
+        today = datetime.date.today()
         expenses = read_expenses()
 
         if not expenses:

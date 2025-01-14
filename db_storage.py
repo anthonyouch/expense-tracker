@@ -1,6 +1,7 @@
 
 import sqlite3
 from decimal import Decimal
+import datetime
 
 DB_NAME = "expenses.db"
 
@@ -105,3 +106,58 @@ def read_expenses():
         return []
 
 
+def process_recurring_expenses():
+    """
+    Processes all recurring expenses and adds a new instance if needed.
+    Updates the `date_added` field for recurring expenses after processing.
+    """
+    try:
+        today = datetime.date.today()
+
+        with sqlite3.connect(DB_NAME) as conn:
+            cursor = conn.cursor()
+
+            # Fetch all recurring expenses
+            cursor.execute("""
+                SELECT id, name, category, amount, date_added, recurring_schedule 
+                FROM expenses 
+                WHERE recurring = 1
+            """)
+            recurring_expenses = cursor.fetchall()
+
+            for expense in recurring_expenses:
+                expense_id, name, category, amount, date_added, schedule = expense
+                date_added = datetime.datetime.strptime(date_added, "%Y-%m-%d").date()
+
+                # Determine if the expense needs to recur based on the schedule
+                if schedule == "daily":
+                    next_occurrence = date_added + datetime.timedelta(days=1)
+                elif schedule == "weekly":
+                    next_occurrence = date_added + datetime.timedelta(weeks=1)
+                elif schedule == "monthly":
+                    # Add one month by using the calendar module
+                    year, month = date_added.year, date_added.month
+                    next_month = (month % 12) + 1
+                    year += (month + 1) // 13
+                    next_occurrence = date_added.replace(year=year, month=next_month)
+
+                # If today matches or exceeds the next occurrence, add the expense
+                if next_occurrence <= today:
+                    # Add a new expense for today
+                    cursor.execute("""
+                        INSERT INTO expenses (name, category, amount, date_added, recurring, recurring_schedule)
+                        VALUES (?, ?, ?, ?, ?, ?)
+                    """, (name, category, amount, today.strftime("%Y-%m-%d"), 1, schedule))
+
+                    # Update the `date_added` field for the original expense
+                    cursor.execute("""
+                        UPDATE expenses
+                        SET date_added = ?
+                        WHERE id = ?
+                    """, (today.strftime("%Y-%m-%d"), expense_id))
+
+            conn.commit()
+            print("Recurring expenses processed successfully.")
+
+    except sqlite3.Error as e:
+        print(f"Error processing recurring expenses: {e}")
