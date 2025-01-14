@@ -76,11 +76,3 @@ def read_expenses():
         return []
 
 
-def summarize_expenses():
-    """
-    Calculate the total amount spent across all recorded expenses.
-
-    Returns:
-        Decimal: The total amount spent.
-    """
-    pass
