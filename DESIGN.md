@@ -1,81 +1,101 @@
 # Design Rationale: Expense Tracker
 
 ## The Problem
-Managing personal finances can often feel overwhelming, especially when life gets busy. For me, it’s been difficult to:
-- Keep track of where my money is going.
-- Stay consistent with my spending habits.
-- Ensure I don’t overspend while saving for future goals.
 
-I’ve tried using spreadsheets, but they’re time-consuming and not always practical.
+In Version 1, I created a console-based Expense Tracker that writes data to a CSV file. This worked well for personal use and small data sets, but I realized a few limitations:
 
-I wanted a simple solution that allows me to:
-1. Quickly set and adjust my budget.
-2. Track my daily spending without unnecessary distractions.
-3. View how much money I have left at a glance.
+1. Scalability: CSV files can become cumbersome or corrupt as data grows.
+2. Multi-User Support: I’d like to allow multiple users or accounts, but CSV storage doesn’t handle concurrency or user-based data separation well.
+3. Recurring Transactions & Advanced Queries: Features like automatic monthly bills or filtering expenses by category/date are easier to implement with a proper database.
+4. Robust Reporting: Summaries and analyses (e.g., top categories, monthly breakdowns, trending spend) require more powerful data manipulation than CSV can efficiently handle.
 
-This is where the idea for a **console-based Expense Tracker** was born. It’s straightforward, beginner-friendly, and solves a personal inconvenience in my life.
+To address these limitations, Version 2 focuses on database integration and backend feature enhancements—all while keeping it console-based to maintain a simple user interface.
 
 ---
 
 ## The Step-by-Step Process
 
 ### 1. Understanding the Problem
-- **Why do I need this?**  
-  Without a clear system for managing expenses, I often feel uncertain about whether I’m staying within my budget.
-- **Barriers I faced**:
-  - Forgetting to record small expenses.
-  - Losing track of how much I’ve spent in different categories.
-  - The need for a method to easily calculate how much I’ve left.
+- **Why move to a database?**  
+  With a growing data set and potential multi-user environment, a database ensures better performance, data integrity, and easier querying.
+- **What is lacking in Version 1?**:
+  - No concurrency or user concept for multi-user scenarios.
+  - Limited reporting and advanced budgeting features.
+  - Harder to manage recurring expenses in a CSV-based system.
 
-Solution: A console-based tracker where I can **log expenses and calculate my remaining budget instantly**.
-
----
-
-### 2. Breaking Down the Features
-- **Why focus on simplicity?**  
-  Starting with core features ensures the app is usable from the start.
-- **Core Features**:
-  1. Set a monthly budget.
-  2. Add and categorize expenses.
-  3. View all expenses.
-  4. Check remaining budget.
+Solution: Replace CSV with a lightweight database (e.g., SQLite or PostgreSQL), introduce user accounts for separating data, and provide advanced budgeting/reporting features.
 
 ---
 
-### 3. Designing the Program
-- **Why a console app?**  
-  A console-based app allows me to focus on learning core programming concepts without worrying about complex interfaces. It’s also lightweight and fast to test.
-- **Why Python?**  
-  Python’s readability and beginner-friendly syntax made it an ideal choice. Using classes and functions would also help me practice modular programming.
-- **How I tackled barriers**:
-  - Organized the app into manageable components like setting budgets and recording expenses.
-  - Kept the user flow simple: A menu-driven interaction where each option corresponds to a key feature.
-  
+## 2. Breaking Down the New Features
+
+### Database Integration
+- **Rationale**: Improve reliability, allow for structured queries, and scale for more records and potential multi-user usage.  
+- **Implementation**:  
+  - Set up a `db_storage.py` module containing functions like `read_expenses_db()` and `write_expense_db()`.  
+  - Update references in the main app to call the new database functions.
+
+### Recurring Expenses
+- **Rationale**: Automatically track monthly bills, subscriptions, or any predictable expenses.  
+- **Implementation**:  
+  - Allow an expense to be flagged as “recurring” (monthly, weekly, etc.).  
+  - Periodically (or upon user action) generate these expenses in the database for the upcoming period.
+
+### Advanced Budgeting & Reporting
+- **Rationale**: Offer deeper insights into spending habits—like monthly category totals, top 5 spending categories, or daily averages over time.  
+- **Implementation**:  
+  - Use SQL queries to aggregate data by category/date range.  
+  - Add CLI commands to generate these reports on-demand or automatically.
+
+### Potential User Management (It might be deferred to a future version)
+- **Rationale**: Let multiple users each have their own expense records without interfering with each other.  
+- **Implementation**:  
+  - Create a `users` table to store user credentials (hashed passwords, if security is a concern).  
+  - Each expense record references a user ID.  
+  - Provide login flow in the CLI.
+
 ---
 
-## Future Enhancements
-While the initial focus is on creating a fully functional **console-based Expense Tracker**, I plan to expand the project by introducing a front-end interface. This will make the app more user-friendly and visually appealing.
+## 3. Designing the Program
 
-### Goals for the Front-End:
-1. **Web Interface**:
-   - Build a web-based interface using HTML, CSS, and JavaScript or a framework like React.js.
-   - Allow users to interact with the app through a browser, offering forms for input and visualizations for expense tracking.
+### Modular Storage Layer
+- **Why separate it?**  
+  A dedicated `db_storage.py` keeps database logic isolated from the rest of the code. This makes it easier to maintain or switch databases in the future.
 
-2. **Integration with Backend**:
-   - Connect the front-end with the existing backend using APIs (e.g., Flask or Django).
-   - Ensure smooth communication between the user interface and the core logic.
+### Database Schema
+- **Expenses Table**: `id`, `user_id`, `name`, `category`, `amount`, `date`, `recurring_flag`, etc.  
+- **Users Table**: `id`, `username`, `hashed_password`.
 
-3. **Data Visualization**:
-   - Use charts (e.g., pie charts, bar graphs) to display spending habits and trends.
-   - Make it easier for users to analyze their financial data visually.
+### Command-Line Structure
+- Retain the existing menu-based approach from Version 1 (Add Expense, View Expense, Summarize, Show Budget, etc.).  
+- Add new options or submenus if needed (e.g., “Manage Recurring Expenses,” “Generate Advanced Reports”).  
 
-4. **Enhanced Features**:
-   - Implement advanced features like recurring expenses, multi-user support, and saving data to a cloud database.
+### Error Handling and Validation
+- Validate user input, especially for amounts, categories, and recurring intervals.  
+- Handle database exceptions (e.g., connection issues) gracefully, with meaningful console messages.
 
-### Why Start with a Console App?
-By starting with a console-based app, I can focus on building a solid foundation for the backend logic. This ensures that when I transition to the front-end, I already have a reliable and well-tested core to build upon.
+---
+
+## Future Enhancements (Beyond Version 2)
+
+Although Version 2 prioritizes database integration and backend features, future versions might include:
+
+### Front-End/Web Interface
+- Use a framework like **Flask** or **Django** to offer a web-based UI, making the application more accessible.
+
+### Automated Alerts/Notifications
+- Send email or push notifications when nearing budget limits or upon receiving large expenses.
+
+### Data Visualization
+- Incorporate advanced charts (e.g., bar or pie charts) to display monthly spending, category trends, etc.
+
+### Cloud Integration
+- Deploy to a cloud server for real-time access across multiple devices.
 
 ---
 
 ## Reflection
-This project isn’t just about building an app—it’s about learning to approach problems systematically, communicate my thought process, and work effectively with others. By focusing on **why** I made each decision, I hope to show how I think critically and adapt to challenges.
+
+This second iteration evolves from a minimal CSV-based script into a more robust application capable of handling larger datasets, recurring expenses, and multiple user accounts—all while remaining console-based. By focusing on **database integration**, it not only addresses the scalability and shortcomings of Version 1 but also sets the stage for future expansions, such as web interfaces or advanced analytics.
+
+
