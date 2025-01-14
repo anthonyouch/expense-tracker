@@ -11,11 +11,16 @@ from decimal import Decimal
 
 
 from storage import read_expenses, write_expense
+from db_storage import *
 
 from expense import Expense 
 
 
+
 def main():
+
+    initialize_db()
+
     while True:
         print("\nWelcome to the Expense Tracker!")
         print("1. Add Expense")

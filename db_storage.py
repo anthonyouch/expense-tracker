@@ -9,7 +9,25 @@ def initialize_db():
     Initialize the database and create the necessary tables 
     if they do not exist.
     """
-    pass
+    try:
+        with sqlite3.connect(DB_NAME) as conn:
+            cursor = conn.cursor()
+            
+            # Create the expenses table if it doesn't already exist
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS expenses (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL,
+                    category TEXT NOT NULL,
+                    amount TEXT NOT NULL,
+                    date_added TEXT DEFAULT (DATE('now'))
+                )
+            """)
+            conn.commit()
+
+        print(f"Database initialized successfully: {DB_NAME}")
+    except sqlite3.Error as e:
+        print(f"Error initializing database: {e}")
 
 def write_expense(expense):
     """

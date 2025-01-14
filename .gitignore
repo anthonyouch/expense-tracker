@@ -1,0 +1,10 @@
+# Ignore database files
+*.db
+
+# Ignore CSV files
+*.csv
+
+# Ignore Python cache files (optional, but recommended)
+__pycache__/
+*.pyc
+*.pyo
