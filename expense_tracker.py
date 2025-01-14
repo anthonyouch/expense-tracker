@@ -5,54 +5,17 @@ Handles adding, viewing, and summarizing expenses.
 For detailed requirements and features, refer to requirements.md.
 """
 
-import csv
 import datetime
 import calendar
 from decimal import Decimal
 
+
+from storage import read_expenses, write_expense
+
 from expense import Expense 
-
-# Constant for CSV file path
-EXPENSES_FILE = "expenses.csv"
-
-
-def read_expenses(file_path=EXPENSES_FILE):
-    """
-    Reads expenses from a CSV file and returns them as a list of dictionaries.
-    If the file doesn't exist, returns an empty list.
-    """
-    try:
-        with open(file_path, mode="r") as file:
-            reader = csv.DictReader(file)
-            return list(reader)
-    except FileNotFoundError:
-        return []  # No file yet, return empty
-    except Exception as e:
-        print(f"An error occurred while reading the file: {e}")
-        return []
-
-
-def write_expense(expense, file_path=EXPENSES_FILE):
-    """
-    Appends a single expense (as a dict) to the CSV file.
-    Creates the file and writes a header if it doesn't exist or is empty.
-    """
-    try:
-        with open(file_path, mode="a", newline="") as file:
-            writer = csv.DictWriter(file, fieldnames=["name", "category", "amount"])
-            if file.tell() == 0:
-                writer.writeheader()
-            writer.writerow(expense)
-    except Exception as e:
-        print(f"An error occurred while writing to the file: {e}")
 
 
 def main():
-    """
-    Main function that serves as the entry point of the application.
-    Displays a menu to the user and calls corresponding functions 
-    based on the user's choice.
-    """
     while True:
         print("\nWelcome to the Expense Tracker!")
         print("1. Add Expense")
@@ -76,7 +39,6 @@ def main():
                 print("Goodbye!")
                 break
             else:
-                # Go back to menu without breaking
                 continue
         else:
             print("Invalid choice. Please try again.")
@@ -106,7 +68,7 @@ def add_expense():
         print("\nSelect a category:")
         for i, category in enumerate(categories, 1):
             print(f"{i}. {category}")
-        
+
         # Get the user's category choice
         while True:
             try:
@@ -138,7 +100,7 @@ def view_expenses():
     Reads all expenses from the CSV file and displays them 
     in a human-readable tabular format.
     """
-    expenses = read_expenses()  # Use helper function
+    expenses = read_expenses()
     if not expenses:
         print("No expenses recorded yet.")
         return
@@ -183,11 +145,10 @@ def show_remaining_budget():
         today = datetime.date.today()
         expenses = read_expenses()
 
-        # If no expenses, just show that the entire budget remains
         if not expenses:
             print("No expenses recorded yet.")
             print(f"Remaining budget: ${monthly_budget:.2f}")
-            
+
             # Calculate remaining daily budget
             remaining_days = calendar.monthrange(today.year, today.month)[1] - today.day
             if remaining_days > 0:
