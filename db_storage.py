@@ -3,15 +3,14 @@ import sqlite3
 from decimal import Decimal
 import datetime
 
-DB_NAME = "expenses.db"
 
-def initialize_db():
+def initialize_db(db_name="expenses.db"):
     """
     Initialize the database and create the `expenses` table 
     with support for recurring expenses.
     """
     try:
-        with sqlite3.connect(DB_NAME) as conn:
+        with sqlite3.connect(db_name) as conn:
             cursor = conn.cursor()
 
             # Create the expenses table
@@ -27,12 +26,12 @@ def initialize_db():
                 )
             """)
             conn.commit()
-            print(f"Database initialized successfully: {DB_NAME}")
+            print(f"Database initialized successfully: {db_name}")
     except sqlite3.Error as e:
         print(f"Error initializing database: {e}")
 
 
-def write_expense(expense):
+def write_expense(expense, db_name="expenses.db"):
     """
     Add a new expense to the database.
 
@@ -46,7 +45,7 @@ def write_expense(expense):
             - 'recurring_schedule': (optional) Recurrence schedule (e.g., 'weekly', 'monthly').
     """
     try:
-        with sqlite3.connect(DB_NAME) as conn:
+        with sqlite3.connect(db_name) as conn:
             cursor = conn.cursor()
             cursor.execute("""
                 INSERT INTO expenses (name, category, amount, date_added, recurring, recurring_schedule)
@@ -66,7 +65,7 @@ def write_expense(expense):
 
 
 
-def read_expenses():
+def read_expenses(db_name="expenses.db"):
     """
     Retrieve all expenses from the database.
 
@@ -80,7 +79,7 @@ def read_expenses():
             - 'recurring_schedule': Recurrence schedule (e.g., 'weekly', 'monthly').
     """
     try:
-        with sqlite3.connect(DB_NAME) as conn:
+        with sqlite3.connect(db_name) as conn:
             cursor = conn.cursor()
             cursor.execute("""
                 SELECT name, category, amount, date_added, recurring, recurring_schedule
@@ -106,7 +105,7 @@ def read_expenses():
         return []
 
 
-def process_recurring_expenses():
+def process_recurring_expenses(db_name="expenses.db"):
     """
     Processes all recurring expenses and adds a new instance if needed.
     Updates the `date_added` field for recurring expenses after processing.
@@ -114,7 +113,7 @@ def process_recurring_expenses():
     try:
         today = datetime.date.today()
 
-        with sqlite3.connect(DB_NAME) as conn:
+        with sqlite3.connect(db_name) as conn:
             cursor = conn.cursor()
 
             # Fetch all recurring expenses
