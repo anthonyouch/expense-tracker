@@ -123,7 +123,30 @@ def summarize_expenses():
     Calculates the total amount spent across all recorded expenses 
     and displays the result.
     """
-    pass
+    try:
+        # Open the CSV file in read mode
+        with open("expenses.csv", mode="r") as file:
+            reader = csv.DictReader(file)
+
+            # Convert the reader to a list of expenses
+            expenses = list(reader)
+
+            # Check if there are no expenses
+            if not expenses:
+                print("No expenses recorded yet.")
+                return
+
+            # Calculate the total amount spent
+            total_spent = sum(float(expense["amount"]) for expense in expenses)
+
+            # Display the total amount
+            print(f"\nTotal amount spent: ${total_spent:.2f}")
+
+    except FileNotFoundError:
+        print("No expenses found. Start by adding some!")
+    except Exception as e:
+        print(f"An error occurred while summarizing expenses: {e}")
+
 
 def show_remaining_budget():
     """
