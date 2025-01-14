@@ -163,6 +163,8 @@ def show_remaining_budget():
         # Get user input for the monthly budget
         monthly_budget = float(input("Enter your monthly budget: "))
 
+        today = datetime.date.today()
+
         # Open the CSV file in read mode
         try:
             with open("expenses.csv", mode="r") as file:
@@ -176,8 +178,8 @@ def show_remaining_budget():
                     print("No expenses recorded yet.")
                     print(f"Remaining budget: ${monthly_budget:.2f}")
                     
-                    # Calculate remaining daily budget
-                    remaining_days = calculate_remaining_days()
+                    # Calculate remaining daily budgettoday = datetime.date.today()
+                    remaining_days = calendar.monthrange(today.year, today.month)[1] - today.day
                     daily_budget = monthly_budget / remaining_days
                     print(f"Remaining budget per day: ${daily_budget:.2f}")
                     return
@@ -190,7 +192,7 @@ def show_remaining_budget():
             print(f"Remaining budget: ${monthly_budget:.2f}")
             
             # Calculate remaining daily budget
-            remaining_days = calculate_remaining_days()
+            remaining_days = calendar.monthrange(today.year, today.month)[1] - today.day
             daily_budget = monthly_budget / remaining_days
             print(f"Remaining budget per day: ${daily_budget:.2f}")
             return
@@ -199,8 +201,7 @@ def show_remaining_budget():
         remaining_budget = monthly_budget - total_spent
 
         # Calculate the remaining daily budget
-        today = datetime.date.today()
-        _, last_day_of_month = calendar.monthrange(today.year, today.month)
+        last_day_of_month = calendar.monthrange(today.year, today.month)[1]
         remaining_days = last_day_of_month - today.day
         daily_budget = remaining_budget / remaining_days if remaining_days > 0 else 0
 
