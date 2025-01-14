@@ -7,6 +7,7 @@ For detailed requirements and features, refer to requirements.md.
 
 from expense import Expense
 import csv  # For file handling
+import datetime
 
 
 def main():
@@ -148,12 +149,71 @@ def summarize_expenses():
         print(f"An error occurred while summarizing expenses: {e}")
 
 
+import datetime
+import calendar
+
 def show_remaining_budget():
     """
     Prompts the user to input their monthly budget, calculates the 
     remaining budget based on total expenses, and displays the result.
+    Also calculates the remaining daily budget based on the days left 
+    in the current month.
     """
-    pass
+    try:
+        # Get user input for the monthly budget
+        monthly_budget = float(input("Enter your monthly budget: "))
+
+        # Open the CSV file in read mode
+        try:
+            with open("expenses.csv", mode="r") as file:
+                reader = csv.DictReader(file)
+
+                # Convert the reader to a list of expenses
+                expenses = list(reader)
+
+                # Check if there are no expenses
+                if not expenses:
+                    print("No expenses recorded yet.")
+                    print(f"Remaining budget: ${monthly_budget:.2f}")
+                    
+                    # Calculate remaining daily budget
+                    remaining_days = calculate_remaining_days()
+                    daily_budget = monthly_budget / remaining_days
+                    print(f"Remaining budget per day: ${daily_budget:.2f}")
+                    return
+
+                # Calculate the total amount spent
+                total_spent = sum(float(expense["amount"]) for expense in expenses)
+
+        except FileNotFoundError:
+            print("No expenses found. Start by adding some!")
+            print(f"Remaining budget: ${monthly_budget:.2f}")
+            
+            # Calculate remaining daily budget
+            remaining_days = calculate_remaining_days()
+            daily_budget = monthly_budget / remaining_days
+            print(f"Remaining budget per day: ${daily_budget:.2f}")
+            return
+
+        # Calculate the remaining budget
+        remaining_budget = monthly_budget - total_spent
+
+        # Calculate the remaining daily budget
+        today = datetime.date.today()
+        _, last_day_of_month = calendar.monthrange(today.year, today.month)
+        remaining_days = last_day_of_month - today.day
+        daily_budget = remaining_budget / remaining_days if remaining_days > 0 else 0
+
+        # Display the results
+        print(f"\nTotal spent: ${total_spent:.2f}")
+        print(f"Remaining budget: ${remaining_budget:.2f}")
+        print(f"Remaining budget per day: ${daily_budget:.2f}")
+
+    except ValueError:
+        print("Invalid input. Please enter a numeric value for the budget.")
+    except Exception as e:
+        print(f"An error occurred while calculating the remaining budget: {e}")
+
 
 if __name__ == "__main__":
     main()
