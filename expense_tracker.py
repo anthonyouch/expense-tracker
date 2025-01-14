@@ -93,9 +93,30 @@ def add_expense():
 def view_expenses():
     """
     Reads all expenses from the CSV file and displays them 
-    in a human-readable format.
+    in a human-readable tabular format.
     """
-    pass
+    try:
+        # Open the CSV file in read mode
+        with open("expenses.csv", mode="r") as file:
+            reader = csv.DictReader(file)
+
+            # Check if the file is empty
+            expenses = list(reader)
+            if not expenses:
+                print("No expenses recorded yet.")
+                return
+
+            # Display the expenses in a table format
+            print("\nRecorded Expenses:")
+            print(f"{'Name':<20}{'Category':<15}{'Amount':<10}")
+            print("-" * 45)
+            for expense in expenses:
+                print(f"{expense['name']:<20}{expense['category']:<15}${expense['amount']:<10}")
+    except FileNotFoundError:
+        print("No expenses found. Start by adding some!")
+    except Exception as e:
+        print(f"An error occurred while reading expenses: {e}")
+
 
 def summarize_expenses():
     """
