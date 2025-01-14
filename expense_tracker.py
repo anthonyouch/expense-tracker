@@ -5,9 +5,46 @@ Handles adding, viewing, and summarizing expenses.
 For detailed requirements and features, refer to requirements.md.
 """
 
-from expense import Expense
-import csv  # For file handling
+import csv
 import datetime
+import calendar
+from decimal import Decimal
+
+from expense import Expense 
+
+# Constant for CSV file path
+EXPENSES_FILE = "expenses.csv"
+
+
+def read_expenses(file_path=EXPENSES_FILE):
+    """
+    Reads expenses from a CSV file and returns them as a list of dictionaries.
+    If the file doesn't exist, returns an empty list.
+    """
+    try:
+        with open(file_path, mode="r") as file:
+            reader = csv.DictReader(file)
+            return list(reader)
+    except FileNotFoundError:
+        return []  # No file yet, return empty
+    except Exception as e:
+        print(f"An error occurred while reading the file: {e}")
+        return []
+
+
+def write_expense(expense, file_path=EXPENSES_FILE):
+    """
+    Appends a single expense (as a dict) to the CSV file.
+    Creates the file and writes a header if it doesn't exist or is empty.
+    """
+    try:
+        with open(file_path, mode="a", newline="") as file:
+            writer = csv.DictWriter(file, fieldnames=["name", "category", "amount"])
+            if file.tell() == 0:
+                writer.writeheader()
+            writer.writerow(expense)
+    except Exception as e:
+        print(f"An error occurred while writing to the file: {e}")
 
 
 def main():
@@ -16,15 +53,15 @@ def main():
     Displays a menu to the user and calls corresponding functions 
     based on the user's choice.
     """
-    print("Welcome to the Expense Tracker!")
-    print("1. Add Expense")
-    print("2. View Expenses")
-    print("3. Summarize Expenses")
-    print("4. Show Remaining Budget")
-    print("5. Exit")
-    
     while True:
-        choice = input("Choose an option (1-5): ")
+        print("\nWelcome to the Expense Tracker!")
+        print("1. Add Expense")
+        print("2. View Expenses")
+        print("3. Summarize Expenses")
+        print("4. Show Remaining Budget")
+        print("5. Exit")
+
+        choice = input("Choose an option (1-5): ").strip()
         if choice == "1":
             add_expense()
         elif choice == "2":
@@ -34,10 +71,16 @@ def main():
         elif choice == "4":
             show_remaining_budget()
         elif choice == "5":
-            print("Goodbye!")
-            break
+            confirm = input("Are you sure you want to exit? (y/n): ").lower()
+            if confirm == 'y':
+                print("Goodbye!")
+                break
+            else:
+                # Go back to menu without breaking
+                continue
         else:
             print("Invalid choice. Please try again.")
+
 
 def add_expense():
     """
@@ -48,7 +91,15 @@ def add_expense():
     try:
         # Get user input for the expense details
         name = input("Enter the expense name: ").strip()
-        amount = float(input("Enter the expense amount: "))
+        if not name:
+            print("Expense name cannot be empty.")
+            return
+
+        amount_str = input("Enter the expense amount: ").strip()
+        amount = Decimal(amount_str)  # Use Decimal for money
+        if amount < 0:
+            print("Amount cannot be negative. Please try again.")
+            return
 
         # Predefined list of categories
         categories = ["Food", "Transport", "Entertainment", "Utilities", "Other"]
@@ -69,18 +120,10 @@ def add_expense():
                 print("Invalid input. Please enter a number.")
 
         # Create an Expense object
-        expense = Expense(name=name, category=category, amount=amount)
+        expense_obj = Expense(name=name, category=category, amount=str(amount))
 
-        # Save the expense to the CSV file
-        with open("expenses.csv", mode="a", newline="") as file:
-            writer = csv.DictWriter(file, fieldnames=["name", "category", "amount"])
-            
-            # Write the header if the file is empty
-            if file.tell() == 0:
-                writer.writeheader()
-
-            # Write the expense to the file
-            writer.writerow(expense.to_dict())
+        # Save the expense to the CSV file using our helper function
+        write_expense(expense_obj.to_dict())
 
         print(f"Expense '{name}' added successfully in category '{category}'!")
 
@@ -89,34 +132,23 @@ def add_expense():
     except Exception as e:
         print(f"An error occurred: {e}")
 
-    
 
 def view_expenses():
     """
     Reads all expenses from the CSV file and displays them 
     in a human-readable tabular format.
     """
-    try:
-        # Open the CSV file in read mode
-        with open("expenses.csv", mode="r") as file:
-            reader = csv.DictReader(file)
+    expenses = read_expenses()  # Use helper function
+    if not expenses:
+        print("No expenses recorded yet.")
+        return
 
-            # Check if the file is empty
-            expenses = list(reader)
-            if not expenses:
-                print("No expenses recorded yet.")
-                return
-
-            # Display the expenses in a table format
-            print("\nRecorded Expenses:")
-            print(f"{'Name':<20}{'Category':<15}{'Amount':<10}")
-            print("-" * 45)
-            for expense in expenses:
-                print(f"{expense['name']:<20}{expense['category']:<15}${expense['amount']:<10}")
-    except FileNotFoundError:
-        print("No expenses found. Start by adding some!")
-    except Exception as e:
-        print(f"An error occurred while reading expenses: {e}")
+    # Display the expenses in a table format
+    print("\nRecorded Expenses:")
+    print(f"{'Name':<20}{'Category':<15}{'Amount':<10}")
+    print("-" * 45)
+    for expense in expenses:
+        print(f"{expense['name']:<20}{expense['category']:<15}${expense['amount']:<10}")
 
 
 def summarize_expenses():
@@ -124,33 +156,15 @@ def summarize_expenses():
     Calculates the total amount spent across all recorded expenses 
     and displays the result.
     """
-    try:
-        # Open the CSV file in read mode
-        with open("expenses.csv", mode="r") as file:
-            reader = csv.DictReader(file)
+    expenses = read_expenses()
+    if not expenses:
+        print("No expenses recorded yet.")
+        return
 
-            # Convert the reader to a list of expenses
-            expenses = list(reader)
+    # Calculate the total amount spent (using Decimal for accuracy)
+    total_spent = sum(Decimal(expense["amount"]) for expense in expenses)
+    print(f"\nTotal amount spent: ${total_spent:.2f}")
 
-            # Check if there are no expenses
-            if not expenses:
-                print("No expenses recorded yet.")
-                return
-
-            # Calculate the total amount spent
-            total_spent = sum(float(expense["amount"]) for expense in expenses)
-
-            # Display the total amount
-            print(f"\nTotal amount spent: ${total_spent:.2f}")
-
-    except FileNotFoundError:
-        print("No expenses found. Start by adding some!")
-    except Exception as e:
-        print(f"An error occurred while summarizing expenses: {e}")
-
-
-import datetime
-import calendar
 
 def show_remaining_budget():
     """
@@ -160,42 +174,32 @@ def show_remaining_budget():
     in the current month.
     """
     try:
-        # Get user input for the monthly budget
-        monthly_budget = float(input("Enter your monthly budget: "))
+        budget_str = input("Enter your monthly budget: ").strip()
+        monthly_budget = Decimal(budget_str)
+        if monthly_budget < 0:
+            print("Budget cannot be negative.")
+            return
 
         today = datetime.date.today()
+        expenses = read_expenses()
 
-        # Open the CSV file in read mode
-        try:
-            with open("expenses.csv", mode="r") as file:
-                reader = csv.DictReader(file)
-
-                # Convert the reader to a list of expenses
-                expenses = list(reader)
-
-                # Check if there are no expenses
-                if not expenses:
-                    print("No expenses recorded yet.")
-                    print(f"Remaining budget: ${monthly_budget:.2f}")
-                    
-                    # Calculate remaining daily budgettoday = datetime.date.today()
-                    remaining_days = calendar.monthrange(today.year, today.month)[1] - today.day
-                    daily_budget = monthly_budget / remaining_days
-                    print(f"Remaining budget per day: ${daily_budget:.2f}")
-                    return
-
-                # Calculate the total amount spent
-                total_spent = sum(float(expense["amount"]) for expense in expenses)
-
-        except FileNotFoundError:
-            print("No expenses found. Start by adding some!")
+        # If no expenses, just show that the entire budget remains
+        if not expenses:
+            print("No expenses recorded yet.")
             print(f"Remaining budget: ${monthly_budget:.2f}")
             
             # Calculate remaining daily budget
             remaining_days = calendar.monthrange(today.year, today.month)[1] - today.day
-            daily_budget = monthly_budget / remaining_days
+            if remaining_days > 0:
+                daily_budget = monthly_budget / remaining_days
+            else:
+                daily_budget = Decimal("0.00")
+
             print(f"Remaining budget per day: ${daily_budget:.2f}")
             return
+
+        # Calculate the total amount spent
+        total_spent = sum(Decimal(expense["amount"]) for expense in expenses)
 
         # Calculate the remaining budget
         remaining_budget = monthly_budget - total_spent
@@ -203,7 +207,7 @@ def show_remaining_budget():
         # Calculate the remaining daily budget
         last_day_of_month = calendar.monthrange(today.year, today.month)[1]
         remaining_days = last_day_of_month - today.day
-        daily_budget = remaining_budget / remaining_days if remaining_days > 0 else 0
+        daily_budget = remaining_budget / remaining_days if remaining_days > 0 else Decimal("0.00")
 
         # Display the results
         print(f"\nTotal spent: ${total_spent:.2f}")
