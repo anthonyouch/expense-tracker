@@ -4,7 +4,11 @@
 # Ignore CSV files
 *.csv
 
-# Ignore Python cache files (optional, but recommended)
+# Ignore Python cache files
 __pycache__/
 *.pyc
 *.pyo
+
+# Ignore Venv files
+venv/
+

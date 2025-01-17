@@ -45,6 +45,9 @@ def write_expense(expense, db_name="expenses.db"):
             - 'recurring_schedule': (optional) Recurrence schedule (e.g., 'weekly', 'monthly').
     """
     try:
+        if not expense.get("date_added"):
+            raise ValueError("The 'date_added' field is required.")
+
         with sqlite3.connect(db_name) as conn:
             cursor = conn.cursor()
             cursor.execute("""
@@ -60,8 +63,11 @@ def write_expense(expense, db_name="expenses.db"):
             ))
             conn.commit()
             print(f"Expense '{expense['name']}' added successfully!")
+    except ValueError as ve:
+        print(f"Validation Error: {ve}")
     except sqlite3.Error as e:
         print(f"Error adding expense: {e}")
+
 
 
 

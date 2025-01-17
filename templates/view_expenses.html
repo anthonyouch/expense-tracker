@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Tracker - View Expenses</title>
+</head>
+<body>
+    <h1>View Expenses</h1>
+    <a href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Amount</th>
+                <th>Date Added</th>
+                <th>Recurring</th>
+                <th>Schedule</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for expense in expenses %}
+            <tr>
+                <td>{{ expense.name }}</td>
+                <td>{{ expense.category }}</td>
+                <td>${{ expense.amount }}</td>
+                <td>{{ expense.date_added }}</td>
+                <td>{{ 'Yes' if expense.recurring else 'No' }}</td>
+                <td>{{ expense.recurring_schedule or 'N/A' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
