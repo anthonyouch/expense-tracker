@@ -2,14 +2,6 @@
 
 {% block content %}
 <div class="container">
-    <!-- Add Expense Form Modal -->
-    <div class="text-center my-4">
-        <a href="#" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#addExpenseModal">
-            Add Expense
-        </a>
-    </div>
-    
-    <!-- End Add Expense Form -->
 
     <!-- Expenses Summary -->
     <div class="container">
@@ -61,9 +53,16 @@
     <!-- End Expenses Summary -->
 </div>
 
+<!-- Expenses Header with Add Expense Button -->
+<div class="d-flex align-items-center my-4">
+    <h3 class="mb-0">Expenses (Past 7 Days & Future)</h3>
+    <a href="#" class="btn btn-primary ms-5" data-bs-toggle="modal" data-bs-target="#addExpenseModal">
+        Add Expense
+    </a>
+</div>
+
 <!-- Weekly Expenses Table -->
-<h3>Expenses from the Past Week</h3>
-{% if weekly_expenses %}
+{% if recent_and_future_expenses %}
 <div class="table-responsive mt-3">
     <table class="table table-striped">
         <thead>
@@ -75,7 +74,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for expense in weekly_expenses %}
+            {% for expense in recent_and_future_expenses %}
             <tr>
                 <td>{{ expense.name }}</td>
                 <td>{{ expense.category }}</td>
@@ -89,5 +88,6 @@
 {% else %}
 <p>No expenses found in the past week.</p>
 {% endif %}
+
 
 {% endblock %}

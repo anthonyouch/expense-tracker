@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for
-from db_storage import initialize_db, write_expense, read_expenses, process_recurring_expenses, get_weekly_expenses, get_weekly_expenses_amount, get_monthly_expenses_amount
+from db_storage import initialize_db, write_expense, read_expenses, process_recurring_expenses, get_recent_and_future_expenses, get_weekly_expenses_amount, get_monthly_expenses_amount
 from datetime import date
 # Initialize Flask app
 app = Flask(__name__)
@@ -11,8 +11,8 @@ initialize_db(DB_NAME)  # Initialize the database
 @app.route('/')
 def dashboard():
     today = date.today()
-    weekly_expenses = get_weekly_expenses()
-    daily_expenses = sum(float(exp['amount']) for exp in weekly_expenses if exp['date_added'] == str(today))
+    recent_and_future_expenses = get_recent_and_future_expenses()
+    daily_expenses = sum(float(exp['amount']) for exp in recent_and_future_expenses if exp['date_added'] == str(today))
     weekly_total = get_weekly_expenses_amount()
     monthly_total = get_monthly_expenses_amount()
 
@@ -20,7 +20,7 @@ def dashboard():
         'index.html',
         today=today,
         daily_expenses=daily_expenses,
-        weekly_expenses=weekly_expenses,
+        recent_and_future_expenses=recent_and_future_expenses,
         weekly_total=weekly_total,
         monthly_expenses=monthly_total,
     )

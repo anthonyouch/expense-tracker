@@ -168,50 +168,43 @@ def process_recurring_expenses(db_name="expenses.db"):
         print(f"Error processing recurring expenses: {e}")
 
 
-def get_weekly_expenses(db_name="expenses.db"):
+def get_recent_and_future_expenses(db_name="expenses.db"):
     """
-    Retrieve all expenses from the past week.
-
-    Args:
-        db_name (str): The name of the database.
+    Retrieve expenses starting from 7 days ago up to future dates, sorted by date (oldest last).
 
     Returns:
         list[dict]: A list of dictionaries, each representing an expense.
     """
     try:
+        today = datetime.date.today()
+        seven_days_ago = today - datetime.timedelta(days=7)
+
         with sqlite3.connect(db_name) as conn:
             cursor = conn.cursor()
-
-            # Calculate the date 7 days ago
-            today = datetime.date.today()
-            last_week = today - datetime.timedelta(days=7)
-
-            # Query for expenses in the past week
             cursor.execute("""
                 SELECT name, category, amount, date_added, recurring, recurring_schedule
                 FROM expenses
-                WHERE date(date_added) >= date(?) AND date(date_added) <= date(?)
-            """, (last_week, today))
-
+                WHERE date_added >= ?
+                ORDER BY date_added DESC
+            """, (seven_days_ago,))
             rows = cursor.fetchall()
 
-        # Convert rows to a list of dictionaries
-        weekly_expenses = [
+        expenses = [
             {
                 "name": row[0],
                 "category": row[1],
                 "amount": float(row[2]),
                 "date_added": row[3],
-                "recurring": bool(row[4]),  # Convert to boolean for clarity
+                "recurring": row[4],
                 "recurring_schedule": row[5],
             }
             for row in rows
         ]
-        return weekly_expenses
-
+        return expenses
     except sqlite3.Error as e:
-        print(f"Error fetching weekly expenses: {e}")
+        print(f"Error retrieving recent and future expenses: {e}")
         return []
+
 
 
 def get_monthly_expenses_amount(db_name="expenses.db"):
