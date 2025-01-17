@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for
-from db_storage import initialize_db, write_expense, read_expenses, process_recurring_expenses, get_recent_and_future_expenses, get_weekly_expenses_amount, get_monthly_expenses_amount
+from db_storage import initialize_db, write_expense, read_expenses, process_recurring_expenses, get_recent_and_future_expenses, get_weekly_expenses_amount, get_monthly_expenses_amount, delete_expense
 from datetime import date
 # Initialize Flask app
 app = Flask(__name__)
@@ -34,7 +34,7 @@ def view_expenses():
     expenses = read_expenses(DB_NAME)
     return render_template("view_expenses.html", expenses=expenses)
 
-@app.route("/add-expense", methods=["POST"])
+@app.route("/add_expense", methods=["POST"])
 def add_expense():
     """
     Handle adding a new expense.
@@ -61,6 +61,20 @@ def add_expense():
     # Redirect to the dashboard
     return redirect(url_for("dashboard"))
 
+
+
+@app.route("/delete_expense/<int:expense_id>", methods=["POST"])
+def delete_expense_route(expense_id):
+    """
+    Route to handle deleting an expense by its ID.
+    """
+    try:
+        delete_expense(expense_id)  # Call the function from db_storage.py
+    except Exception as e:
+        print(f"Error deleting expense: {e}")
+    return redirect("/")
+
+
 @app.route("/process-recurring", methods=["POST"])
 def process_recurring():
     """
@@ -71,3 +85,5 @@ def process_recurring():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
+

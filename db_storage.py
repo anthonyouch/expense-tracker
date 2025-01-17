@@ -69,14 +69,13 @@ def write_expense(expense, db_name="expenses.db"):
         print(f"Error adding expense: {e}")
 
 
-
-
 def read_expenses(db_name="expenses.db"):
     """
     Retrieve all expenses from the database.
 
     Returns:
         list[dict]: A list of dictionaries, each representing an expense with keys:
+            - 'id': ID of the expense.
             - 'name': Name of the expense.
             - 'category': Category of the expense.
             - 'amount': Amount of the expense.
@@ -88,7 +87,7 @@ def read_expenses(db_name="expenses.db"):
         with sqlite3.connect(db_name) as conn:
             cursor = conn.cursor()
             cursor.execute("""
-                SELECT name, category, amount, date_added, recurring, recurring_schedule
+                SELECT id, name, category, amount, date_added, recurring, recurring_schedule
                 FROM expenses
             """)
             rows = cursor.fetchall()
@@ -96,12 +95,13 @@ def read_expenses(db_name="expenses.db"):
         # Convert rows to a list of dictionaries
         expenses = [
             {
-                "name": row[0],
-                "category": row[1],
-                "amount": row[2],
-                "date_added": row[3],
-                "recurring": row[4],
-                "recurring_schedule": row[5],
+                "id": row[0],
+                "name": row[1],
+                "category": row[2],
+                "amount": row[3],
+                "date_added": row[4],
+                "recurring": row[5],
+                "recurring_schedule": row[6],
             }
             for row in rows
         ]
@@ -109,6 +109,24 @@ def read_expenses(db_name="expenses.db"):
     except sqlite3.Error as e:
         print(f"Error reading expenses: {e}")
         return []
+    
+def delete_expense(expense_id, db_name="expenses.db"):
+    """
+    Delete an expense by its ID.
+
+    Args:
+        expense_id (int): The ID of the expense to delete.
+        db_name (str): The database file name (default is 'expenses.db').
+    """
+    try:
+        with sqlite3.connect(db_name) as conn:
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM expenses WHERE id = ?", (expense_id,))
+            conn.commit()
+            print(f"Expense with ID {expense_id} deleted successfully.")
+    except sqlite3.Error as e:
+        print(f"Error deleting expense: {e}")
+
 
 
 def process_recurring_expenses(db_name="expenses.db"):
@@ -169,12 +187,6 @@ def process_recurring_expenses(db_name="expenses.db"):
 
 
 def get_recent_and_future_expenses(db_name="expenses.db"):
-    """
-    Retrieve expenses starting from 7 days ago up to future dates, sorted by date (oldest last).
-
-    Returns:
-        list[dict]: A list of dictionaries, each representing an expense.
-    """
     try:
         today = datetime.date.today()
         seven_days_ago = today - datetime.timedelta(days=7)
@@ -182,7 +194,7 @@ def get_recent_and_future_expenses(db_name="expenses.db"):
         with sqlite3.connect(db_name) as conn:
             cursor = conn.cursor()
             cursor.execute("""
-                SELECT name, category, amount, date_added, recurring, recurring_schedule
+                SELECT id, name, category, amount, date_added, recurring, recurring_schedule
                 FROM expenses
                 WHERE date_added >= ?
                 ORDER BY date_added DESC
@@ -191,12 +203,13 @@ def get_recent_and_future_expenses(db_name="expenses.db"):
 
         expenses = [
             {
-                "name": row[0],
-                "category": row[1],
-                "amount": float(row[2]),
-                "date_added": row[3],
-                "recurring": row[4],
-                "recurring_schedule": row[5],
+                "id": row[0],
+                "name": row[1],
+                "category": row[2],
+                "amount": float(row[3]),
+                "date_added": row[4],
+                "recurring": row[5],
+                "recurring_schedule": row[6],
             }
             for row in rows
         ]
@@ -204,6 +217,7 @@ def get_recent_and_future_expenses(db_name="expenses.db"):
     except sqlite3.Error as e:
         print(f"Error retrieving recent and future expenses: {e}")
         return []
+
 
 
 

@@ -80,6 +80,14 @@
                 <td>{{ expense.category }}</td>
                 <td>${{ "%.2f"|format(expense.amount) }}</td>
                 <td>{{ expense.date_added }}</td>
+                <td>
+                    <form action="/delete_expense/{{ expense.id }}" method="post" style="display:inline;">
+                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this expense?');">
+                            Delete
+                        </button>
+                    </form>
+                </td>
+                
             </tr>
             {% endfor %}
         </tbody>
