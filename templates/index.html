@@ -1,10 +1,97 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="text-center">
-    <h1>Welcome to Expense Tracker</h1>
-    <p class="lead">Your personal finance tracking app.</p>
-    <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addExpenseModal">Add Expense</a>
-</div>
-{% endblock %}
+<div class="container">
+    <!-- Add Expense Form Modal -->
+    <div class="text-center my-4">
+        <a href="#" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#addExpenseModal">
+            Add Expense
+        </a>
+    </div>
+    
+    <!-- End Add Expense Form -->
 
+    <!-- Expenses Summary -->
+    <div class="container">
+        <div class="row mb-3">
+            <div class="col">
+                <div class="card text-white bg-primary mb-3">
+                    <div class="card-header">Daily Expenses</div>
+                    <div class="card-body">
+                        <h4 class="card-title">
+                            {% if daily_expenses %}
+                                ${{ daily_expenses }}
+                            {% else %}
+                                $0.00
+                            {% endif %}
+                        </h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card text-white bg-info mb-3">
+                    <div class="card-header">Weekly Expenses</div>
+                    <div class="card-body">
+                        <h4 class="card-title">
+                            {% if weekly_total %}
+                                ${{ weekly_total }}
+                            {% else %}
+                                $0.00
+                            {% endif %}
+                        </h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card text-white bg-warning mb-3">
+                    <div class="card-header">Monthly Expenses</div>
+                    <div class="card-body">
+                        <h4 class="card-title">
+                            {% if monthly_expenses %}
+                                ${{ monthly_expenses }}
+                            {% else %}
+                                $0.00
+                            {% endif %}
+                        </h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Expenses Summary -->
+</div>
+
+<!-- Weekly Expenses Table -->
+<h3>Expenses from the Past Week</h3>
+{% if weekly_expenses %}
+<div class="table-responsive mt-3">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Amount</th>
+                <th>Date Added</th>
+                <th>Recurring</th>
+                <th>Schedule</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for expense in weekly_expenses %}
+            <tr>
+                <td>{{ expense.name }}</td>
+                <td>{{ expense.category }}</td>
+                <td>${{ "%.2f"|format(expense.amount) }}</td>
+                <td>{{ expense.date_added }}</td>
+                <td>{{ "Yes" if expense.recurring else "No" }}</td>
+                <td>{{ expense.recurring_schedule if expense.recurring else "N/A" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<p>No expenses found in the past week.</p>
+{% endif %}
+
+{% endblock %}

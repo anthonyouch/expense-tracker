@@ -166,3 +166,49 @@ def process_recurring_expenses(db_name="expenses.db"):
 
     except sqlite3.Error as e:
         print(f"Error processing recurring expenses: {e}")
+
+
+def get_weekly_expenses(db_name="expenses.db"):
+    """
+    Retrieve all expenses from the past week.
+
+    Args:
+        db_name (str): The name of the database.
+
+    Returns:
+        list[dict]: A list of dictionaries, each representing an expense.
+    """
+    try:
+        with sqlite3.connect(db_name) as conn:
+            cursor = conn.cursor()
+
+            # Calculate the date 7 days ago
+            today = datetime.date.today()
+            last_week = today - datetime.timedelta(days=7)
+
+            # Query for expenses in the past week
+            cursor.execute("""
+                SELECT name, category, amount, date_added, recurring, recurring_schedule
+                FROM expenses
+                WHERE date(date_added) >= date(?) AND date(date_added) <= date(?)
+            """, (last_week, today))
+
+            rows = cursor.fetchall()
+
+        # Convert rows to a list of dictionaries
+        weekly_expenses = [
+            {
+                "name": row[0],
+                "category": row[1],
+                "amount": float(row[2]),
+                "date_added": row[3],
+                "recurring": bool(row[4]),  # Convert to boolean for clarity
+                "recurring_schedule": row[5],
+            }
+            for row in rows
+        ]
+        return weekly_expenses
+
+    except sqlite3.Error as e:
+        print(f"Error fetching weekly expenses: {e}")
+        return []

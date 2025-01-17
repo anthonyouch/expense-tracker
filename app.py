@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for
-from db_storage import initialize_db, write_expense, read_expenses, process_recurring_expenses
+from db_storage import initialize_db, write_expense, read_expenses, process_recurring_expenses, get_weekly_expenses
 from datetime import date
 # Initialize Flask app
 app = Flask(__name__)
@@ -8,25 +8,23 @@ app = Flask(__name__)
 DB_NAME = "expenses.db"
 initialize_db(DB_NAME)  # Initialize the database
 
-@app.route("/")
+@app.route('/')
 def dashboard():
-    """
-    Render the dashboard with data from the database.
-    """
-    # Placeholder data - calculate total expenses, etc.
-    expenses = read_expenses(DB_NAME)
-    total_expenses = sum(float(expense["amount"]) for expense in expenses)
-    monthly_breakdown = {}  # Logic for monthly breakdown (to be implemented later)
-    category_breakdown = {}  # Logic for category breakdown (to be implemented later)
     today = date.today()
+    weekly_expenses = get_weekly_expenses()
+    daily_expenses = sum(float(exp['amount']) for exp in weekly_expenses if exp['date_added'] == str(today))
+    weekly_total = sum(float(exp['amount']) for exp in weekly_expenses)
+    monthly_expenses = 0  # Placeholder 
 
     return render_template(
-        "index.html",
-        total_expenses=total_expenses,
-        monthly_breakdown=monthly_breakdown,
-        category_breakdown=category_breakdown,
+        'index.html',
         today=today,
+        daily_expenses=daily_expenses,
+        weekly_expenses=weekly_expenses,
+        weekly_total=weekly_total,
+        monthly_expenses=monthly_expenses,
     )
+
 
 @app.route("/view-expenses")
 def view_expenses():
