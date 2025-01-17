@@ -72,7 +72,10 @@ def delete_expense_route(expense_id):
         delete_expense(expense_id)  # Call the function from db_storage.py
     except Exception as e:
         print(f"Error deleting expense: {e}")
-    return redirect("/")
+
+    # Get the "next" page from the form (defaults to "/" if none provided)
+    next_page = request.form.get("next_page", "/")
+    return redirect(next_page)
 
 
 @app.route("/process-recurring", methods=["POST"])

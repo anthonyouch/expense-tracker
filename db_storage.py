@@ -98,7 +98,7 @@ def read_expenses(db_name="expenses.db"):
                 "id": row[0],
                 "name": row[1],
                 "category": row[2],
-                "amount": row[3],
+                "amount": float(row[3]),
                 "date_added": row[4],
                 "recurring": row[5],
                 "recurring_schedule": row[6],
