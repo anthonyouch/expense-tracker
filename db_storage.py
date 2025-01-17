@@ -212,3 +212,61 @@ def get_weekly_expenses(db_name="expenses.db"):
     except sqlite3.Error as e:
         print(f"Error fetching weekly expenses: {e}")
         return []
+
+
+def get_monthly_expenses_amount(db_name="expenses.db"):
+    """
+    Calculate the total expenses for the current month.
+
+    Args:
+        db_name (str): Name of the database file.
+
+    Returns:
+        float: Total expenses for the current month.
+    """
+    try:
+        with sqlite3.connect(db_name) as conn:
+            cursor = conn.cursor()
+            # Get current month and year
+            current_month = datetime.datetime.now().strftime("%Y-%m")
+            
+            # Query expenses for the current month
+            cursor.execute("""
+                SELECT SUM(CAST(amount AS REAL)) 
+                FROM expenses 
+                WHERE strftime('%Y-%m', date_added) = ?
+            """, (current_month,))
+            total = cursor.fetchone()[0]
+            return total if total else 0.0
+    except sqlite3.Error as e:
+        print(f"Error calculating monthly expenses: {e}")
+        return 0.0
+
+def get_weekly_expenses_amount(db_name="expenses.db"):
+    """
+    Calculate the total expenses amount for the current week (Monday to Sunday).
+
+    Args:
+        db_name (str): Name of the database file.
+
+    Returns:
+        float: Total expenses for the current week.
+    """
+    try:
+        with sqlite3.connect(db_name) as conn:
+            cursor = conn.cursor()
+            
+            # Get the current week and year
+            current_year_week = datetime.datetime.now().strftime("%Y-%W")
+            
+            # Query for the total expenses for the current week
+            cursor.execute("""
+                SELECT SUM(CAST(amount AS REAL))
+                FROM expenses
+                WHERE strftime('%Y-%W', date_added) = ?
+            """, (current_year_week,))
+            total = cursor.fetchone()[0]
+            return total if total else 0.0
+    except sqlite3.Error as e:
+        print(f"Error calculating weekly expenses: {e}")
+        return 0.0
