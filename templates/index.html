@@ -72,8 +72,6 @@
                 <th>Category</th>
                 <th>Amount</th>
                 <th>Date Added</th>
-                <th>Recurring</th>
-                <th>Schedule</th>
             </tr>
         </thead>
         <tbody>
@@ -83,8 +81,6 @@
                 <td>{{ expense.category }}</td>
                 <td>${{ "%.2f"|format(expense.amount) }}</td>
                 <td>{{ expense.date_added }}</td>
-                <td>{{ "Yes" if expense.recurring else "No" }}</td>
-                <td>{{ expense.recurring_schedule if expense.recurring else "N/A" }}</td>
             </tr>
             {% endfor %}
         </tbody>
